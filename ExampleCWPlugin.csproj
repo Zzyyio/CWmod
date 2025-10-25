@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
@@ -14,12 +14,16 @@
         <PackageReference Include="Krafs.Publicizer" Version="2.3.0"/>
         <!-- Alternatively, use BepInEx's Publicizer instead of Krafs -->
         <!--<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1"/>-->
-        <Reference Include="$(CWDir)\Content Warning_Data\Managed\*.dll" Private="false"/>
-        <Publicize Include="Assembly-CSharp" />
+        <!-- 游戏 DLL 引用 - 需要设置正确的 CWDir 路径 -->
+        <Reference Include="$(CWDir)\Content Warning_Data\Managed\*.dll" Private="false" Condition="Exists('$(CWDir)')"/>
+        <Publicize Include="Assembly-CSharp" Condition="Exists('$(CWDir)')"/>
     </ItemGroup>
 
+    <!-- 已禁用自动复制到游戏目录 -->
+    <!--
     <Target Name="CopyOutputFileToGame" AfterTargets="Build">
         <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll;preview.png" DestinationFolder="$(CWDir)\Plugins\$(MSBuildProjectName)"/>
     </Target>
+    -->
 
 </Project>

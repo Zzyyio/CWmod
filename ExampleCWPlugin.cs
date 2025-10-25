@@ -2,12 +2,12 @@ using HarmonyLib;
 using Unity.Mathematics;
 using UnityEngine;
 using Zorro.Settings;
-
+//dude
 // ExampleCWPlugin is mostly an example of how to use the modding API, not an actual serious mod.
 // It adds a setting to the Mods settings page, which is a slider from 0 to 100.
 // It then edits the Flashlight.Update method to prevent the battery of the flashlight
 // from falling below that setting value.
-
+    
 namespace ExampleCWPlugin;
 
 // The first argument is the GUID for this mod. This must be globally unique across all mods.
@@ -66,4 +66,46 @@ public class ExampleSetting : FloatSetting, IExposedSetting
     public SettingCategory GetSettingCategory() => SettingCategory.Mods;
 
     public string GetDisplayName() => "Example mod setting";
+}
+
+// 移动速度设置
+[ContentWarningSetting]
+public class MovementSpeedSetting : FloatSetting, IExposedSetting
+{
+    public override void ApplyValue()
+    {
+        Debug.Log($"移动速度已更改为: {Value}%");
+    }
+
+    protected override float GetDefaultValue() => 100;
+    protected override float2 GetMinMaxValue() => new(50, 300); // 50%到300%的速度范围
+
+    public SettingCategory GetSettingCategory() => SettingCategory.Mods;
+
+    public string GetDisplayName() => "移动速度 (Movement Speed)";
+}
+
+// Player移动速度补丁
+[HarmonyPatch(typeof(Player))]
+public class PlayerMovementPatches
+{
+    private static MovementSpeedSetting? movementSpeedSetting;
+
+    // 修改Player的移动速度
+    [HarmonyPatch("Update")]
+    [HarmonyPostfix]
+    private static void UpdatePostfix(Player __instance)
+    {
+        movementSpeedSetting ??= GameHandler.Instance.SettingsHandler.GetSetting<MovementSpeedSetting>();
+        
+        // 获取速度倍率 (100 = 1.0倍, 200 = 2.0倍)
+        float speedMultiplier = movementSpeedSetting.Value / 100f;
+        
+        // 修改玩家的移动速度
+        if (__instance.data != null && __instance.data.movementSpeed != null)
+        {
+            // 保存原始速度并应用倍率
+            __instance.data.movementSpeed *= speedMultiplier;
+        }
+    }
 }
